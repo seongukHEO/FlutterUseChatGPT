@@ -36,10 +36,13 @@ class _MyHomePageState extends State<MyHomePage> {
   static const String _kStrings = "Seonguk Flutter ChatGPT";
   String get _currentString => _kStrings;
 
-  //데이터
+  ScrollController scrollController = ScrollController();
+
+  //데이터 삭제
   @override
   void dispose() {
     messageTextController.dispose();
+    scrollController.dispose();
     super.dispose();
   }
 
@@ -73,12 +76,51 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
               ),
+              //채팅 위젯
               Expanded(
                   child: Container(
-                    color: Colors.blue,
-                    child: Center(
-                      child: Text(_kStrings),
-                    )
+                    child: ListView.builder(
+                      itemCount: 100,
+                        itemBuilder: (c, i){
+                        //유저의 질문
+                        if (i % 2 == 0) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Row(
+                              children: [
+                                CircleAvatar(),
+                                SizedBox(width: 8,),
+                                Expanded(
+                                    child: Column(
+                                      children: [
+                                        Text("User"),
+                                        Text("message")
+                                      ],
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                    )
+                                )
+                              ],
+                            ),
+                          );
+                        }
+                        //GPT의 답
+                          return Row(
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: Colors.teal,
+                              ),
+                              SizedBox(width: 8,),
+                              Expanded(child: Column(
+                                children: [
+                                  Text("GPT"),
+                                  Text("OpenAI")
+                                ],
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                              ))
+                            ],
+                          );
+                        }
+                    ),
                   )
               ),
               Dismissible(
