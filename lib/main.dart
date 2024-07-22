@@ -29,7 +29,8 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage>
+with TickerProviderStateMixin{
 
   TextEditingController messageTextController = TextEditingController();
 
@@ -37,6 +38,56 @@ class _MyHomePageState extends State<MyHomePage> {
   String get _currentString => _kStrings;
 
   ScrollController scrollController = ScrollController();
+  late Animation<int> _characterCount;
+  late AnimationController animationController;
+
+  setupAnimations(){
+    animationController = AnimationController(
+        vsync: this,
+        //애니메이션 지속시간
+        duration: Duration(milliseconds: 2500)
+    );
+    //여긴 애니메이션의 길이 파악? 이라고 보면된다
+    //즉 0부터 _currentString의 길이만큼
+    _characterCount = StepTween(begin: 0 ,end:_currentString.length ).animate(
+       CurvedAnimation(
+           parent: animationController,
+           curve: Curves.easeIn
+       )
+    );
+    animationController.addListener((){
+      setState(() {
+
+      });
+    });
+
+    animationController.addStatusListener((status){
+
+      //그니까 즉 애니메이션이 끝까지 진행 됐을 경우
+      //1초 쉬어주고 다시 뒤로 보낸다
+      if (status == AnimationStatus.completed) {
+        Future.delayed(Duration(seconds: 1)).then((value){
+          animationController.reverse();
+        });
+      }
+      //여기는 애니메이션이 중단됐을 경우..?
+      else if(status == AnimationStatus.dismissed){
+        Future.delayed(Duration(seconds: 1)).then((value){
+          animationController.forward();
+        });
+      }
+    });
+    //이걸 꼭 넣어주어야 애니메이션이 동작한다
+    animationController.forward();
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    setupAnimations();
+  }
+
 
   //데이터 삭제
   @override
@@ -78,49 +129,65 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               //채팅 위젯
               Expanded(
-                  child: Container(
-                    child: ListView.builder(
-                      itemCount: 100,
-                        itemBuilder: (c, i){
-                        //유저의 질문
-                        if (i % 2 == 0) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: Row(
-                              children: [
-                                CircleAvatar(),
-                                SizedBox(width: 8,),
-                                Expanded(
-                                    child: Column(
-                                      children: [
-                                        Text("User"),
-                                        Text("message")
-                                      ],
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                    )
-                                )
-                              ],
-                            ),
-                          );
-                        }
-                        //GPT의 답
-                          return Row(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: Colors.teal,
-                              ),
-                              SizedBox(width: 8,),
-                              Expanded(child: Column(
-                                children: [
-                                  Text("GPT"),
-                                  Text("OpenAI")
-                                ],
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                              ))
-                            ],
-                          );
-                        }
-                    ),
+                  child: AnimatedBuilder(
+                    animation: _characterCount,
+                    builder: (BuildContext context, Widget? child) {
+                      //String을 계산해준다..?
+                      String text = _currentString.substring(0, _characterCount.value);
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("${text}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
+                          CircleAvatar(
+                            radius: 8,
+                            backgroundColor: Colors.green,
+                          )
+                        ],
+                      );
+                    },
+
+                    // child: ListView.builder(
+                    //   itemCount: 100,
+                    //     itemBuilder: (c, i){
+                    //     //유저의 질문
+                    //     if (i % 2 == 0) {
+                    //       return Padding(
+                    //         padding: const EdgeInsets.symmetric(vertical: 16),
+                    //         child: Row(
+                    //           children: [
+                    //             CircleAvatar(),
+                    //             SizedBox(width: 8,),
+                    //             Expanded(
+                    //                 child: Column(
+                    //                   children: [
+                    //                     Text("User"),
+                    //                     Text("message")
+                    //                   ],
+                    //                   crossAxisAlignment: CrossAxisAlignment.start,
+                    //                 )
+                    //             )
+                    //           ],
+                    //         ),
+                    //       );
+                    //     }
+                    //     //GPT의 답
+                    //       return Row(
+                    //         children: [
+                    //           CircleAvatar(
+                    //             backgroundColor: Colors.teal,
+                    //           ),
+                    //           SizedBox(width: 8,),
+                    //           Expanded(child: Column(
+                    //             children: [
+                    //               Text("GPT"),
+                    //               Text("OpenAI")
+                    //             ],
+                    //             crossAxisAlignment: CrossAxisAlignment.start,
+                    //           ))
+                    //         ],
+                    //       );
+                    //     }
+                    // ),
                   )
               ),
               Dismissible(
