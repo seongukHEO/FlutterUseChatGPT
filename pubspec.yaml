@@ -35,6 +35,14 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
+  http: ^1.2.2
+#  핸드폰 진동 기능
+  vibration: ^1.9.0
+# Stream을 사용
+  rxdart: ^0.28.0
+
+
+
 
 dev_dependencies:
   flutter_test:
